@@ -1,5 +1,8 @@
 #:kivy 1.0.9
 
+#:set paddle_short_dim 25
+#:set paddle_long_dim 200
+
 <PongBall>:
     size: 50, 50
     canvas:
@@ -8,7 +11,7 @@
             size: self.size
 
 <PongPaddle>:
-    size: 25, 200
+
     canvas:
         Rectangle:
             pos: self.pos
@@ -18,6 +21,8 @@
     ball: pong_ball
     player1: player_left
     player2: player_right
+    player3: player_top
+    player4: player_bottom
 
     canvas:
         Rectangle:
@@ -40,12 +45,28 @@
         id: pong_ball
         center: self.parent.center
 
+
     PongPaddle:
         id: player_left
+        size: paddle_short_dim, paddle_long_dim
         x: root.x
         center_y: root.center_y
 
     PongPaddle:
         id: player_right
+        size: paddle_short_dim, paddle_long_dim
         x: root.width - self.width
         center_y: root.center_y
+
+    PongPaddle:
+        id: player_top
+        size: paddle_long_dim, paddle_short_dim
+        x: root.center_x - (self.width / 2)
+        center_y: root.y
+
+    PongPaddle:
+        id: player_bottom
+        size: paddle_long_dim, paddle_short_dim
+        x: root.center_x - (self.width / 2)
+        center_y: root.height - self.height
+

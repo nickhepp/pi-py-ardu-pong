@@ -2,7 +2,7 @@ import pongball, pongpaddle
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import (
-    NumericProperty, ReferenceListProperty, ObjectProperty
+    NumericProperty, ReferenceListProperty, ObjectProperty, ListProperty
 )
 from kivy.vector import Vector
 from kivy.clock import Clock
@@ -12,6 +12,11 @@ class PongGame(Widget):
     ball = ObjectProperty(None)
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
+    player3 = ObjectProperty(None)
+    player4 = ObjectProperty(None)
+
+    balls = ListProperty([])
+    players = ListProperty([])
 
     def serve_ball(self, vel=(4, 0)):
         self.ball.center = self.center
