@@ -11,11 +11,11 @@
             size: self.size
 
 <PongPaddle>:
-
     canvas:
         Rectangle:
             pos: self.pos
             size: self.size
+
 
 <PongGame>:
     ball: pong_ball
@@ -45,28 +45,44 @@
         id: pong_ball
         center: self.parent.center
 
-
+        canvas:
+            Color:
+                rgba: 1, 0, 0, 1
     PongPaddle:
         id: player_left
         size: paddle_short_dim, paddle_long_dim
         x: root.x
         center_y: root.center_y
 
+        canvas:
+            Color:
+                rgba: 0, 1, 0, 1
     PongPaddle:
         id: player_right
         size: paddle_short_dim, paddle_long_dim
         x: root.width - self.width
         center_y: root.center_y
 
+        canvas:
+            Color:
+                rgba: 0, 0, 1, 1
     PongPaddle:
         id: player_top
         size: paddle_long_dim, paddle_short_dim
-        x: root.center_x - (self.width / 2)
-        center_y: root.y
+        #x: root.center_x - (self.width / 2)
+        center_x: root.center_x
+        #center_y: root.height - (self.height)
+        y: root.height - (self.height)
 
+
+        canvas:
+            Color:
+                rgba: 1, 1, 0, 1
     PongPaddle:
         id: player_bottom
         size: paddle_long_dim, paddle_short_dim
-        x: root.center_x - (self.width / 2)
-        center_y: root.height - self.height
-
+        #x: root.center_x - (self.width / 2)
+        center_x: root.center_x
+        #center_y: root.y + self.height
+        #y: root.y + (self.height / 2) - 10
+        y: root.y
