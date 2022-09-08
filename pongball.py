@@ -21,3 +21,6 @@ class PongBall(Widget):
 
     def set_bounced_paddle(self, bounced_paddle):
         self._bounced_paddle = bounced_paddle
+
+    def get_bounced_paddle(self):
+        return self._bounced_paddle

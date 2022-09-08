@@ -29,8 +29,8 @@ class PongPaddle(Widget):
 
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
+            ball.set_bounced_paddle(self)
             ball.rgba = self.rgba
-            #ball.canvas.children[3].rgba = self.canvas.children[3].rgba
             # grab the initial ball velocity
             vx, vy = ball.velocity
             # find how high up the paddle it was hit
