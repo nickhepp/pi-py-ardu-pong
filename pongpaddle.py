@@ -1,11 +1,12 @@
 from kivy.uix.widget import Widget
 from kivy.properties import (
-    NumericProperty
+    NumericProperty, ListProperty
 )
 from kivy.vector import Vector
 
 
 class PongPaddle(Widget):
+    rgba = ListProperty([0.75, 0.5, 0.5, 1])  # will be used as background color
     score = NumericProperty(0)
     current_ball_size = NumericProperty(0)
     READY_BALL_SIZE = 10
@@ -28,6 +29,8 @@ class PongPaddle(Widget):
 
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
+            ball.rgba = self.rgba
+            #ball.canvas.children[3].rgba = self.canvas.children[3].rgba
             # grab the initial ball velocity
             vx, vy = ball.velocity
             # find how high up the paddle it was hit
