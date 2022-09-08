@@ -5,6 +5,13 @@
 #:set region_short_dim 20
 #:set region_opacity 0.5
 
+#:set player_left_color 1, 0, 0, 1
+#:set player_right_color 0, 1, 0, 1
+#:set player_top_color 0, 0, 1, 1
+#:set player_bottom_color 1, 1, 0, 1
+
+#:set score_font_size 70
+
 <PongBall>:
     size: 50, 50
     canvas:
@@ -46,17 +53,38 @@
             pos: self.center_x - 5, 0
             size: 10, self.height
 
+############# PLAYER 1 LEFT LABEL #########
     Label:
-        font_size: 70
+        font_size: score_font_size
         center_x: root.width / 4
-        top: root.top - 50
+        center_y: root.height / 2
         text: str(root.player1.score)
+        color: player_left_color
 
+############# PLAYER 2 RIGHT LABEL #########
     Label:
-        font_size: 70
+        font_size: score_font_size
         center_x: root.width * 3 / 4
-        top: root.top - 50
+        center_y: root.height / 2
         text: str(root.player2.score)
+        color: player_right_color
+
+############# PLAYER 3 TOP LABEL #########
+    Label:
+        font_size: score_font_size
+        center_x: root.width / 2
+        center_y: root.height * 3 / 4
+        text: str(root.player3.score)
+        color: player_top_color
+
+############# PLAYER 4 BOTTOM LABEL #########
+    Label:
+        font_size: score_font_size
+        center_x: root.width / 2
+        center_y: root.height / 4
+        text: str(root.player4.score)
+        color: player_bottom_color
+
 
     PongBall:
         id: pong_ball
@@ -64,10 +92,10 @@
 
 
 
-############# PLAYER LEFT #########
+############# PLAYER 1 LEFT #########
         canvas:
             Color:
-                rgba: 1, 0, 0, 1
+                rgba: player_left_color
     PongPaddle:
         id: player_left
         size: paddle_short_dim, paddle_long_dim
@@ -83,11 +111,11 @@
         x: root.x
         center_y: root.center_y
 
-############# PLAYER RIGHT #########
+############# PLAYER 2 RIGHT #########
 
         canvas:
             Color:
-                rgba: 0, 1, 0, 1
+                rgba: player_right_color
     PongPaddle:
         id: player_right
         size: paddle_short_dim, paddle_long_dim
@@ -103,11 +131,11 @@
         x: root.width - self.width
         center_y: root.center_y
 
-############# PLAYER TOP #########
+############# PLAYER 3 TOP #########
 
         canvas:
             Color:
-                rgba: 0, 0, 1, 1
+                rgba: player_top_color
     PongPaddle:
         id: player_top
         size: paddle_long_dim, paddle_short_dim
@@ -123,11 +151,11 @@
         center_x: root.center_x
         y: root.height - self.height
 
-############# PLAYER BOTTOM #########
+############# PLAYER 4 BOTTOM #########
 
         canvas:
             Color:
-                rgba: 1, 1, 0, 1
+                rgba: player_bottom_color
     PongPaddle:
         id: player_bottom
         size: paddle_long_dim, paddle_short_dim
