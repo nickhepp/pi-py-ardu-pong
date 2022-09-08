@@ -2,6 +2,8 @@
 
 #:set paddle_short_dim 25
 #:set paddle_long_dim 200
+#:set region_short_dim 20
+#:set region_opacity 0.5
 
 <PongBall>:
     size: 50, 50
@@ -16,13 +18,28 @@
             pos: self.pos
             size: self.size
 
+<ScoreRegion>
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 
 <PongGame>:
+
     ball: pong_ball
+
     player1: player_left
+    region1: region_left
+
     player2: player_right
+    region2: region_right
+
     player3: player_top
+    region3: region_top
+
     player4: player_bottom
+    region4: region_bottom
 
     canvas:
         Rectangle:
@@ -45,6 +62,9 @@
         id: pong_ball
         center: self.parent.center
 
+
+
+############# PLAYER LEFT #########
         canvas:
             Color:
                 rgba: 1, 0, 0, 1
@@ -53,6 +73,17 @@
         size: paddle_short_dim, paddle_long_dim
         x: root.x
         center_y: root.center_y
+
+        canvas:
+            Color:
+                rgba: 1, 0, 0, region_opacity
+    ScoreRegion:
+        id: region_left
+        size: region_short_dim, root.height
+        x: root.x
+        center_y: root.center_y
+
+############# PLAYER RIGHT #########
 
         canvas:
             Color:
@@ -65,15 +96,34 @@
 
         canvas:
             Color:
+                rgba: 0, 1, 0, region_opacity
+    ScoreRegion:
+        id: region_right
+        size: region_short_dim, root.height
+        x: root.width - self.width
+        center_y: root.center_y
+
+############# PLAYER TOP #########
+
+        canvas:
+            Color:
                 rgba: 0, 0, 1, 1
     PongPaddle:
         id: player_top
         size: paddle_long_dim, paddle_short_dim
-        #x: root.center_x - (self.width / 2)
         center_x: root.center_x
-        #center_y: root.height - (self.height)
         y: root.height - (self.height)
 
+        canvas:
+            Color:
+                rgba: 0, 0, 1, region_opacity
+    ScoreRegion:
+        id: region_top
+        size: root.width, region_short_dim
+        center_x: root.center_x
+        y: root.height - self.height
+
+############# PLAYER BOTTOM #########
 
         canvas:
             Color:
@@ -81,8 +131,15 @@
     PongPaddle:
         id: player_bottom
         size: paddle_long_dim, paddle_short_dim
-        #x: root.center_x - (self.width / 2)
         center_x: root.center_x
         #center_y: root.y + self.height
-        #y: root.y + (self.height / 2) - 10
+        y: root.y
+
+        canvas:
+            Color:
+                rgba: 1, 1, 0, region_opacity
+    ScoreRegion:
+        id: region_bottom
+        size: root.width, region_short_dim
+        center_x: root.center_x
         y: root.y
