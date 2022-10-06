@@ -7,10 +7,10 @@ from kivy.properties import (
 from kivy.vector import Vector
 from kivy.clock import Clock
 import random
-import gamecontroller
+from gamecontroller import GameController
 import gamecontrollerprovider
 from multiprocessing import Process, Queue, Pool
-
+from gamecontrollerpoller import GameControllerPoller
 # consider using async IO to complete coordination between threads
 # https://github.com/pyserial/pyserial-asyncio
 # https://pyserial-asyncio.readthedocs.io/en/latest/shortintro.html
@@ -26,6 +26,8 @@ PLAYER2_CONTROLLER_COLOR: int = 0x00FF00
 PLAYER3_CONTROLLER_COLOR: int = 0x0000FF
 PLAYER4_CONTROLLER_COLOR: int = 0xFFFF00
 
+SERIAL_PORT_NAME_NAME = 'serial_port_name'
+QUEUE_NAME = 'queue'
 
 def get_serial_by_color(clr: int, serial_ports_by_colors: {}):
     clr_str = hex(clr)
@@ -34,6 +36,11 @@ def get_serial_by_color(clr: int, serial_ports_by_colors: {}):
         serial_port = serial_ports_by_colors[clr_str]
     return serial_port
 
+def attempt_add_game_controller(gcs:[], gc: GameController):
+    if (gc.has_serial_port()):
+        gcs.append({
+            SERIAL_PORT_NAME_NAME: gc.serial_port_name,
+            QUEUE_NAME: gc.queue})
 
 class PongGame(Widget):
     ball = ObjectProperty(None)
@@ -62,38 +69,37 @@ class PongGame(Widget):
         serial_ports_by_colors = gc_provider.get_controllers()
 
         # red, color, com_port, queue
+        self.game_controller1 = GameController(get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
+        self.player1.set_game_controller(self.game_controller1)
         self.player1.set_paddle_orientation(self.VERTICAL_ORIENTATION)
         self.region1.set_paddle(self.player1)
-        self.game_controller1 = gamecontroller.GameController(
-            get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
 
         # green
+        self.game_controller2 = GameController(
+            get_serial_by_color(PLAYER2_CONTROLLER_COLOR, serial_ports_by_colors))
+        self.player2.set_game_controller(self.game_controller2)
         self.player2.set_paddle_orientation(self.VERTICAL_ORIENTATION)
         self.region2.set_paddle(self.player2)
-        self.game_controller2 = gamecontroller.GameController(
-            get_serial_by_color(PLAYER2_CONTROLLER_COLOR, serial_ports_by_colors))
 
         # blue
+        self.game_controller3 = GameController(
+            get_serial_by_color(PLAYER3_CONTROLLER_COLOR, serial_ports_by_colors))
+        self.player3.set_game_controller(self.game_controller3)
         self.player3.set_paddle_orientation(self.HORIZONTAL_ORIENTATION)
         self.region3.set_paddle(self.player3)
-        self.game_controller3 = gamecontroller.GameController(
-            get_serial_by_color(PLAYER3_CONTROLLER_COLOR, serial_ports_by_colors))
 
         # yellow
+        self.game_controller4 = GameController(
+            get_serial_by_color(PLAYER4_CONTROLLER_COLOR, serial_ports_by_colors))
+        self.player4.set_game_controller(self.game_controller4)
         self.player4.set_paddle_orientation(self.HORIZONTAL_ORIENTATION)
         self.region4.set_paddle(self.player4)
-        self.game_controller4 = gamecontroller.GameController(
-            get_serial_by_color(PLAYER4_CONTROLLER_COLOR, serial_ports_by_colors))
 
         self.game_controllers = []
-        if (self.game_controller1.has_controller()):
-            self.game_controllers.append(self.game_controller1)
-        if (self.game_controller2.has_controller()):
-            self.game_controllers.append(self.game_controller2)
-        if (self.game_controller3.has_controller()):
-            self.game_controllers.append(self.game_controller3)
-        if (self.game_controller4.has_controller()):
-            self.game_controllers.append(self.game_controller4)
+        attempt_add_game_controller(self.game_controllers, self.game_controller1)
+        attempt_add_game_controller(self.game_controllers, self.game_controller2)
+        attempt_add_game_controller(self.game_controllers, self.game_controller3)
+        attempt_add_game_controller(self.game_controllers, self.game_controller4)
 
     def serve_ball(self, vel=(4, 0)):
         self.ball.center = self.center
@@ -101,6 +107,15 @@ class PongGame(Widget):
 
     def update(self, dt):
         self.ball.move()
+
+        self.game_controller1.read_controller()
+        self.player1.update_location()
+        self.game_controller2.read_controller()
+        self.player2.update_location()
+        self.game_controller3.read_controller()
+        self.player3.update_location()
+        self.game_controller4.read_controller()
+        self.player4.update_location()
 
         # bounce of paddles
         self.player1.bounce_ball(self.ball)
@@ -156,17 +171,25 @@ class PongApp(App):
         game.serve_ball()
         Clock.schedule_interval(game.update, 1.0 / 60.0)
 
-        # with Pool(processes=len(game.game_controllers)) as pool:
-        #    pool.map(run_controller, game.game_controllers)
+        for gc in game.game_controllers:
+            p = Process(target=run_controller, args=(gc,))
+            p.start()
+        #controller_count: int = len(game.game_controllers)
+        #if controller_count > 0:
+        #    with Pool(processes=controller_count) as pool:
+        #        pool.map(run_controller, game.game_controllers)
 
         return game
 
+import time
+def run_controller(port_args: {}):
 
-def run_controller(gc: gamecontroller.GameController):
-    is_connected: bool = gc.connected
-    if not is_connected:
-        is_connected = gc.try_connect()
+    gcp = GameControllerPoller(port_args[SERIAL_PORT_NAME_NAME], port_args[QUEUE_NAME])
 
+    while (True):
+        gcp.read_physical_controller()
+        #print(port_args[SERIAL_PORT_NAME_NAME])
+        #time.sleep(0.500)
 
 if __name__ == '__main__':
     PongApp().run()

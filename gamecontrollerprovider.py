@@ -1,6 +1,7 @@
 import serial
 import serial.tools.list_ports as port_list
 import gamecontrollerresponse
+import serialportfactory
 from datetime import datetime
 from datetime import timedelta
 import time
@@ -24,9 +25,7 @@ class GameControllerProvider:
                     ports.append(p)
 
             for p in ports:
-                serial_port = serial.Serial(
-                    port=p.device, baudrate=115200, bytesize=8, timeout=5, stopbits=serial.STOPBITS_ONE
-                )
+                serial_port = serialportfactory.get_serial_port(p.device)
 
                 # just flush the stuff
                 gamecontrollerresponse.send_command_read_response('', serial_port)
@@ -59,7 +58,9 @@ class GameControllerProvider:
                         blue_val = int(blue_num_str)
                         color_val = (red_val << 16) | (green_val << 8) | (blue_val << 0)
                         color_val_str = hex(color_val)
-                        ports_to_colors[color_val_str] = serial_port
+                        ports_to_colors[color_val_str] = serial_port.name
+
+                serial_port.close()
 
         except Exception as exc:
             print('Issue starting controllers')

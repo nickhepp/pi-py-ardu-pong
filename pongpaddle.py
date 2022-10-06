@@ -4,6 +4,8 @@ from kivy.properties import (
 )
 from kivy.vector import Vector
 
+import gamecontrollerpoller
+from gamecontroller import GameController
 
 class PongPaddle(Widget):
     rgba = ListProperty([0.75, 0.5, 0.5, 1])  # will be used as background color
@@ -13,8 +15,10 @@ class PongPaddle(Widget):
     HORIZONTAL_ORIENTATION = 0
     VERTICAL_ORIENTATION = 1
 
-    _orientation = VERTICAL_ORIENTATION
+    LOCATION_UPDATE_AMOUNT = 5
 
+    _orientation = VERTICAL_ORIENTATION
+    _game_controller = None
 
     def grow_balls(self):
         if self.current_ball_size < self.READY_BALL_SIZE:
@@ -26,6 +30,22 @@ class PongPaddle(Widget):
 
     def set_paddle_orientation(self, orientation :int):
         self._orientation = orientation
+
+    def set_game_controller(self, game_controller: GameController):
+        self._game_controller = game_controller
+
+    def update_location(self):
+        if self._orientation == self.VERTICAL_ORIENTATION:
+            if self._game_controller.y_axis == gamecontrollerpoller.Y_AXIS_UP:
+                self.center_y += self.LOCATION_UPDATE_AMOUNT
+            elif self._game_controller.y_axis == gamecontrollerpoller.Y_AXIS_DOWN:
+                self.center_y -= self.LOCATION_UPDATE_AMOUNT
+        if self._orientation == self.HORIZONTAL_ORIENTATION:
+            if self._game_controller.x_axis == gamecontrollerpoller.X_AXIS_LEFT:
+                self.center_x -= self.LOCATION_UPDATE_AMOUNT
+            elif self._game_controller.x_axis == gamecontrollerpoller.X_AXIS_RIGHT:
+                self.center_x += self.LOCATION_UPDATE_AMOUNT
+
 
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
