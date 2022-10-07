@@ -17,11 +17,15 @@ class GameControllerProvider:
     def get_controllers(self) -> {}:
         ports_to_colors: {} = {}
         try:
+            print("getting_ports")
             potential_ports = list(port_list.comports())
             ports = []
             for p in potential_ports:
+                print("checking port", p.device, ", ", p.description)
                 # filter out things we dont want
-                if not 'Intel(R) Active Management Technology' in p.description:
+                if (not 'Intel(R) Active Management Technology' in p.description) and \
+                        (not 'ttyAMA' in p.device):
+                    print("append port", p.device)
                     ports.append(p)
 
             for p in ports:

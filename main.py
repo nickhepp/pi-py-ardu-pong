@@ -67,6 +67,7 @@ class PongGame(Widget):
         gc_provider = gamecontrollerprovider.GameControllerProvider()
 
         serial_ports_by_colors = gc_provider.get_controllers()
+        #serial_ports_by_colors = {}
 
         # red, color, com_port, queue
         self.game_controller1 = GameController(get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
@@ -122,10 +123,6 @@ class PongGame(Widget):
         self.player2.bounce_ball(self.ball)
         self.player3.bounce_ball(self.ball)
         self.player4.bounce_ball(self.ball)
-
-        # bounce ball off bottom or top
-        if (self.ball.y < self.y) or (self.ball.top > self.top):
-            self.ball.velocity_y *= -1
 
         # went of to a side to score point?
         has_scored = False

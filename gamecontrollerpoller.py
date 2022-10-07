@@ -1,6 +1,7 @@
 from multiprocessing import Process, Queue
 import gamecontrollerresponse
 import serialportfactory
+from time import sleep
 
 SENSOR_DATA_START = 'kit:'
 LEFT_RIGHT_INDEX = 0
@@ -34,7 +35,9 @@ class GameControllerPoller:
         if self.queue.full():
             return
 
+        sleep(0.333)
         sensor_data: str = gamecontrollerresponse.send_command_read_response('edpf_kit_read', self.serial_port)
+
 
         # look to see if this is the data we are looking for
         if sensor_data.startswith(SENSOR_DATA_START):
