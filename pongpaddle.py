@@ -19,6 +19,7 @@ class PongPaddle(Widget):
 
     _orientation = VERTICAL_ORIENTATION
     _game_controller = None
+    _player_id: int = 0
 
     def grow_balls(self):
         if self.current_ball_size < self.READY_BALL_SIZE:
@@ -28,7 +29,8 @@ class PongPaddle(Widget):
         # todo: check to see if button is pressed, and if so release balls
         return None
 
-    def set_paddle_orientation(self, orientation :int):
+    def set_paddle_orientation(self, player_id: int, orientation: int):
+        self._player_id = player_id
         self._orientation = orientation
 
     def set_game_controller(self, game_controller: GameController):

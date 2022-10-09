@@ -4,7 +4,6 @@ from kivy.uix.widget import Widget
 from kivy.properties import (
     ObjectProperty, ListProperty
 )
-from kivy.vector import Vector
 from kivy.clock import Clock
 import random
 from gamecontroller import GameController
@@ -15,6 +14,7 @@ from regiondetector import RegionDetector
 from kivy.uix.label import Label
 from screenbounds import ScreenBounds
 from location import Location
+import ppap
 
 # consider using async IO to complete coordination between threads
 # https://github.com/pyserial/pyserial-asyncio
@@ -117,28 +117,28 @@ class PongGame(Widget):
         # red, color, com_port, queue
         self.game_controller1 = GameController(get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player1.set_game_controller(self.game_controller1)
-        self.player1.set_paddle_orientation(self.VERTICAL_ORIENTATION)
+        self.player1.set_paddle_orientation(ppap.PLAYER1_ID, self.VERTICAL_ORIENTATION)
         self.region1.set_paddle(self.player1)
 
         # green
         self.game_controller2 = GameController(
             get_serial_by_color(PLAYER2_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player2.set_game_controller(self.game_controller2)
-        self.player2.set_paddle_orientation(self.VERTICAL_ORIENTATION)
+        self.player2.set_paddle_orientation(ppap.PLAYER2_ID, self.VERTICAL_ORIENTATION)
         self.region2.set_paddle(self.player2)
 
         # blue
         self.game_controller3 = GameController(
             get_serial_by_color(PLAYER3_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player3.set_game_controller(self.game_controller3)
-        self.player3.set_paddle_orientation(self.HORIZONTAL_ORIENTATION)
+        self.player3.set_paddle_orientation(ppap.PLAYER3_ID, self.HORIZONTAL_ORIENTATION)
         self.region3.set_paddle(self.player3)
 
         # yellow
         self.game_controller4 = GameController(
             get_serial_by_color(PLAYER4_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player4.set_game_controller(self.game_controller4)
-        self.player4.set_paddle_orientation(self.HORIZONTAL_ORIENTATION)
+        self.player4.set_paddle_orientation(ppap.PLAYER4_ID, self.HORIZONTAL_ORIENTATION)
         self.region4.set_paddle(self.player4)
 
         self.game_controllers = []
