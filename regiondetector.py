@@ -1,25 +1,50 @@
 from location import Location
 from screenbounds import ScreenBounds
+import ppap
+
+
+
 
 class RegionDetector:
-    def __init__(self):
-        self.HORIZ_LEFT = -1
-        self.HORIZ_MIDDLE = 0
-        self.HORIZ_RIGHT = 1
 
-        self.VERT_TOP = 1
-        self.VERT_MIDDLE = 0
-        self.VERT_BOTTOM = -1
+    def get_scored_on_player_from_ball_location(self,
+                                                region: int,
+                                                screen_bounds: ScreenBounds,
+                                                ball_location: Location):
+        player_id: int
+        if region == ppap.REGION_LM:
+            player_id = ppap.PLAYER1_ID
+        elif region == ppap.REGION_LT:
+            if abs(screen_bounds.left - ball_location.x) < abs(ball_location.y - screen_bounds.top):
+                player_id = ppap.PLAYER2_ID
+            else:
+                player_id = ppap.PLAYER2_ID
+        elif region == ppap.REGION_MT:
+            player_id = ppap.PLAYER2_ID
+        elif region == ppap.REGION_RT:
+            if abs(ball_location.x - screen_bounds.right) < abs(ball_location.y - screen_bounds.top):
+                player_id = ppap.PLAYER2_ID
+            else:
+                player_id = ppap.PLAYER3_ID
+        elif region == ppap.REGION_RM:
+            player_id = ppap.PLAYER3_ID
+        elif region == ppap.REGION_RB:
+            if abs(ball_location.x - screen_bounds.right) < abs(screen_bounds.bottom - ball_location.y):
+                player_id = ppap.PLAYER4_ID
+            else:
+                player_id = ppap.PLAYER3_ID
+        elif region == ppap.REGION_MB:
+            player_id = ppap.PLAYER4_ID
+        elif region == ppap.REGION_LB:
+            if abs(screen_bounds.left - ball_location.x) < abs(screen_bounds.bottom - ball_location.y):
+                player_id = ppap.PLAYER4_ID
+            else:
+                player_id = ppap.PLAYER3_ID
+        else:  # if region == ppap.REGION_MM:
+            player_id = None
 
-        self.REGION_LT = 0
-        self.REGION_LM = 1
-        self.REGION_LB = 2
-        self.REGION_MT = 3
-        self.REGION_MM = 4
-        self.REGION_MB = 5
-        self.REGION_RT = 6
-        self.REGION_RM = 7
-        self.REGION_RB = 8
+        return player_id
+
 
     def get_region(self, screen_bounds: ScreenBounds, ball_location: Location):
 
@@ -40,24 +65,24 @@ class RegionDetector:
         else:
             is_vert_top = True
 
-        region = self.REGION_LT
+        region = ppap.REGION_LT
         if is_horiz_left and is_vert_top:
-            region = self.REGION_LT
+            region = ppap.REGION_LT
         elif is_horiz_left and is_vert_mid:
-            region = self.REGION_LM
+            region = ppap.REGION_LM
         elif is_horiz_left and is_vert_bottom:
-            region = self.REGION_LB
+            region = ppap.REGION_LB
         elif is_horiz_mid and is_vert_top:
-            region = self.REGION_MT
+            region = ppap.REGION_MT
         elif is_horiz_mid and is_vert_mid:
-            region = self.REGION_MM
+            region = ppap.REGION_MM
         elif is_horiz_mid and is_vert_bottom:
-            region = self.REGION_MB
+            region = ppap.REGION_MB
         elif is_horiz_right and is_vert_top:
-            region = self.REGION_RT
+            region = ppap.REGION_RT
         elif is_horiz_right and is_vert_mid:
-            region = self.REGION_RM
+            region = ppap.REGION_RM
         else:  # if is_horiz_right and is_vert_bottom:
-            region = self.REGION_RB
+            region = ppap.REGION_RB
 
         return region

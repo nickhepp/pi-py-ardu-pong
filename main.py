@@ -91,24 +91,32 @@ class PongGame(Widget):
 
     region_detector = RegionDetector()
 
-    btm_left_lbl = Label()
-    btm_left_lbl.text = 'btm_left'
+    show_debug_labels = True
 
-    btm_right_lbl = Label()
-    btm_right_lbl.text = 'btm_right'
+    if show_debug_labels:
+        btm_left_lbl = Label()
+        btm_left_lbl.text = 'btm_left'
 
-    top_left_lbl = Label()
-    top_left_lbl.text = 'top_left'
+        btm_right_lbl = Label()
+        btm_right_lbl.text = 'btm_right'
 
-    top_right_lbl = Label()
-    top_right_lbl.text = 'top_right'
+        top_left_lbl = Label()
+        top_left_lbl.text = 'top_left'
+
+        top_right_lbl = Label()
+        top_right_lbl.text = 'top_right'
+
+        region_lbl = Label()
+        region_lbl.text = 'region'
 
 
     def class_init(self):
-        self.add_widget(self.btm_left_lbl)
-        self.add_widget(self.btm_right_lbl)
-        self.add_widget(self.top_left_lbl)
-        self.add_widget(self.top_right_lbl)
+        if self.show_debug_labels:
+            self.add_widget(self.btm_left_lbl)
+            self.add_widget(self.btm_right_lbl)
+            self.add_widget(self.top_left_lbl)
+            self.add_widget(self.top_right_lbl)
+            self.add_widget(self.region_lbl)
 
         gc_provider = gamecontrollerprovider.GameControllerProvider()
 
@@ -155,18 +163,6 @@ class PongGame(Widget):
 
         self.ball.move()
 
-        self.btm_left_lbl.x = self.x + 10
-        self.btm_left_lbl.y = self.y + 10
-
-        self.btm_right_lbl.x = self.right - 10 - self.btm_left_lbl.width
-        self.btm_right_lbl.y = self.y + 10
-
-        self.top_left_lbl.x = self.x + 10
-        self.top_left_lbl.y = self.top - 10 - self.top_left_lbl.height
-
-        self.top_right_lbl.x = self.right - 10 - self.btm_left_lbl.width
-        self.top_right_lbl.y = self.top - 10 - self.top_left_lbl.height
-
         self.game_controller1.read_controller()
         self.player1.update_location()
         self.game_controller2.read_controller()
@@ -177,10 +173,13 @@ class PongGame(Widget):
         self.player4.update_location()
 
         # bounce of paddles
-        #screen_bounds =
-        ball_region = self.region_detector.get_region(
-            ScreenBounds(self.x, self.y, self.top, self.right),
-            Location(self.ball.x, self.ball.y))
+        screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
+        ball_location = Location(self.ball.x, self.ball.y)
+        ball_region = self.region_detector.get_region(screen_bounds, ball_location)
+        scored_player_id = self.region_detector.get_scored_on_player_from_ball_location(
+            ball_region,
+            screen_bounds,
+            ball_location)
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
         self.player3.bounce_ball(self.ball)
@@ -189,14 +188,14 @@ class PongGame(Widget):
         # went of to a side to score point?
         has_scored = False
 
-        if not has_scored and self.region1.check_for_score(self.ball):
-            has_scored = True
-        elif not has_scored and self.region2.check_for_score(self.ball):
-            has_scored = True
-        elif not has_scored and self.region3.check_for_score(self.ball):
-            has_scored = True
-        elif not has_scored and self.region4.check_for_score(self.ball):
-            has_scored = True
+        #if not has_scored and self.region1.check_for_score(self.ball):
+        #    has_scored = True
+        #elif not has_scored and self.region2.check_for_score(self.ball):
+        #    has_scored = True
+        #elif not has_scored and self.region3.check_for_score(self.ball):
+        #    has_scored = True
+        #elif not has_scored and self.region4.check_for_score(self.ball):
+        #    has_scored = True
 
         if has_scored:
             rand_val: int = random.randint(0, 3)
@@ -208,6 +207,24 @@ class PongGame(Widget):
                 self.serve_ball(vel=(0, 4))
             else:  # 3
                 self.serve_ball(vel=(0, -4))
+
+        if (self.show_debug_labels):
+            self.btm_left_lbl.x = self.x + 10
+            self.btm_left_lbl.y = self.y + 10
+
+            self.btm_right_lbl.x = self.right - 10 - self.btm_left_lbl.width
+            self.btm_right_lbl.y = self.y + 10
+
+            self.top_left_lbl.x = self.x + 10
+            self.top_left_lbl.y = self.top - 10 - self.top_left_lbl.height
+
+            self.top_right_lbl.x = self.right - 10 - self.btm_left_lbl.width
+            self.top_right_lbl.y = self.top - 10 - self.top_left_lbl.height
+
+            self.region_lbl.center_x = self.center_x
+            self.region_lbl.center_y = self.center_y
+            self.region_lbl.text = ppap.get_player_id_desc(scored_player_id)
+
 
         # if self.ball.x < self.x:
         #    self.player2.score += 1
