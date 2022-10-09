@@ -70,7 +70,6 @@ def attempt_add_game_controller(gcs: [], gc: GameController):
 
 class PongGame(Widget):
     ball = ObjectProperty(None)
-    balls = []
 
     player1 = ObjectProperty(None)
     region1 = ObjectProperty(None)
@@ -86,6 +85,8 @@ class PongGame(Widget):
 
     balls = ListProperty([])
     players = ListProperty([])
+    game_controllers = ListProperty([])
+    controllers = ListProperty([])
 
     HORIZONTAL_ORIENTATION = 0
     VERTICAL_ORIENTATION = 1
@@ -127,28 +128,36 @@ class PongGame(Widget):
         # red, color, com_port, queue
         self.game_controller1 = GameController(get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player1.set_game_controller(self.game_controller1)
-        self.player1.set_paddle_orientation(ppap.PLAYER1_ID, self.VERTICAL_ORIENTATION)
+        self.player1.set_paddle_orientation(ppap.PLAYER1_ID,
+                                            self.VERTICAL_ORIENTATION,
+                                            ppap.PADDLE_FACE_DIRECTION_RIGHT)
         self.region1.set_paddle(self.player1)
 
         # green
         self.game_controller2 = GameController(
             get_serial_by_color(PLAYER2_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player2.set_game_controller(self.game_controller2)
-        self.player2.set_paddle_orientation(ppap.PLAYER2_ID, self.VERTICAL_ORIENTATION)
+        self.player2.set_paddle_orientation(ppap.PLAYER2_ID,
+                                            self.VERTICAL_ORIENTATION,
+                                            ppap.PADDLE_FACE_DIRECTION_BOTTOM)
         self.region2.set_paddle(self.player2)
 
         # blue
         self.game_controller3 = GameController(
             get_serial_by_color(PLAYER3_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player3.set_game_controller(self.game_controller3)
-        self.player3.set_paddle_orientation(ppap.PLAYER3_ID, self.HORIZONTAL_ORIENTATION)
+        self.player3.set_paddle_orientation(ppap.PLAYER3_ID,
+                                            self.HORIZONTAL_ORIENTATION,
+                                            ppap.PADDLE_FACE_DIRECTION_LEFT)
         self.region3.set_paddle(self.player3)
 
         # yellow
         self.game_controller4 = GameController(
             get_serial_by_color(PLAYER4_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player4.set_game_controller(self.game_controller4)
-        self.player4.set_paddle_orientation(ppap.PLAYER4_ID, self.HORIZONTAL_ORIENTATION)
+        self.player4.set_paddle_orientation(ppap.PLAYER4_ID,
+                                            self.HORIZONTAL_ORIENTATION,
+                                            ppap.PADDLE_FACE_DIRECTION_TOP)
         self.region4.set_paddle(self.player4)
 
         self.game_controllers = []
@@ -157,21 +166,18 @@ class PongGame(Widget):
         attempt_add_game_controller(self.game_controllers, self.game_controller3)
         attempt_add_game_controller(self.game_controllers, self.game_controller4)
 
+        self.controllers.append(self.game_controller1)
+        self.controllers.append(self.game_controller2)
+        self.controllers.append(self.game_controller3)
+        self.controllers.append(self.game_controller4)
+
         self.player_ids_to_players = {ppap.PLAYER1_ID: self.player1,
                                       ppap.PLAYER2_ID: self.player2,
                                       ppap.PLAYER3_ID: self.player3,
                                       ppap.PLAYER4_ID: self.player4, }
+        ##def class_init(self):
 
     def serve_ball(self, vel=(4, 0)):
-        # remove the existing one
-        #if self.ball is not None and self.ball.initialized:
-        #    self.remove_widget(self.ball)
-        #elif self.ball is not None:
-        #    self.ball.initialized = True
-        #else:
-        #    # add the next one
-        #    self.ball = PongBall()
-        #    self.add_widget(self.ball)
         self.ball.center = self.center
         self.ball.velocity = vel
 
@@ -186,26 +192,53 @@ class PongGame(Widget):
             next_ball.center = self.center
             next_ball.velocity = (rand_x_vel, rand_y_vel)
 
-
     def update(self, dt):
 
+        # see if we need to create balls
         self.check_create_ball()
+
+        # make the balls move
         for ball in self.balls:
             ball.move()
-
-
         self.ball.move()
 
-        self.game_controller1.read_controller()
-        self.player1.update_location()
-        self.game_controller2.read_controller()
-        self.player2.update_location()
-        self.game_controller3.read_controller()
-        self.player3.update_location()
-        self.game_controller4.read_controller()
-        self.player4.update_location()
+        # read the controller IO
+        for controller in self.controllers:
+            controller.read_controller()
+
+        # update the paddle locations
+        for player_id in self.player_ids_to_players:
+            self.player_ids_to_players[player_id].update_location()
+
+
+        #self.game_controller1.read_controller()
+        #self.player1.update_location()
+        #self.game_controller2.read_controller()
+        #self.player2.update_location()
+        #self.game_controller3.read_controller()
+        #self.player3.update_location()
+        #self.game_controller4.read_controller()
+        #self.player4.update_location()
 
         # make the balls bounce off the paddles
+        screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
+        for ball in self.balls:
+
+            # see if the ball is going to bounce
+            for player_id in self.player_ids_to_players:
+                self.player_ids_to_players[player_id].bounce_ball(ball)
+
+            ball_location = Location(ball.x, ball.y)
+            ball_region = self.region_detector.get_region(screen_bounds, ball_location)
+            scored_player_id = self.region_detector.get_scored_on_player_from_ball_location(
+                ball_region,
+                screen_bounds,
+                ball_location)
+
+            if scored_player_id in self.player_ids_to_players:
+                self.player_ids_to_players[scored_player_id].score_against(ball)
+                self.remove_widget(ball)
+                self.balls.remove(ball)
 
         # bounce of paddles
         self.player1.bounce_ball(self.ball)
@@ -214,7 +247,7 @@ class PongGame(Widget):
         self.player4.bounce_ball(self.ball)
 
         # now check for scoring
-        screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
+
         ball_location = Location(self.ball.x, self.ball.y)
         ball_region = self.region_detector.get_region(screen_bounds, ball_location)
         scored_player_id = self.region_detector.get_scored_on_player_from_ball_location(
@@ -249,7 +282,7 @@ class PongGame(Widget):
             else:  # 3
                 self.serve_ball(vel=(0, -4))
 
-        if (self.show_debug_labels):
+        if self.show_debug_labels:
             self.btm_left_lbl.x = self.x + 10
             self.btm_left_lbl.y = self.y + 10
 
@@ -266,12 +299,6 @@ class PongGame(Widget):
             self.region_lbl.center_y = self.center_y
             self.region_lbl.text = ppap.get_player_id_desc(scored_player_id)
 
-        # if self.ball.x < self.x:
-        #    self.player2.score += 1
-
-        # if self.ball.right > self.width:
-        #    self.player1.score += 1
-        #    self.serve_ball(vel=(-4, 0))
 
     def on_touch_move(self, touch):
         if touch.x < self.width / 3:
