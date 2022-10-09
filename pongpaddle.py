@@ -7,6 +7,7 @@ from kivy.vector import Vector
 import gamecontrollerpoller
 from gamecontroller import GameController
 
+
 class PongPaddle(Widget):
     rgba = ListProperty([0.75, 0.5, 0.5, 1])  # will be used as background color
     score = NumericProperty(0)
@@ -19,7 +20,7 @@ class PongPaddle(Widget):
 
     _orientation = VERTICAL_ORIENTATION
     _game_controller = None
-    _player_id: int = 0
+    player_id: int = 0
 
     def grow_balls(self):
         if self.current_ball_size < self.READY_BALL_SIZE:
@@ -30,7 +31,7 @@ class PongPaddle(Widget):
         return None
 
     def set_paddle_orientation(self, player_id: int, orientation: int):
-        self._player_id = player_id
+        self.player_id = player_id
         self._orientation = orientation
 
     def set_game_controller(self, game_controller: GameController):
@@ -48,6 +49,13 @@ class PongPaddle(Widget):
             elif self._game_controller.x_axis == gamecontrollerpoller.X_AXIS_RIGHT:
                 self.center_x += self.LOCATION_UPDATE_AMOUNT
 
+    def score_against(self, ball):
+        # this paddle is scored against, take away the score
+        self.score -= 1
+        # add one to the scoring one
+        b_paddle = ball.get_bounced_paddle()
+        if b_paddle is not None:
+            b_paddle.score += 1
 
     def bounce_ball(self, ball):
         if self.collide_widget(ball):

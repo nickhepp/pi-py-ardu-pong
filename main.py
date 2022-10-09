@@ -14,6 +14,7 @@ from regiondetector import RegionDetector
 from kivy.uix.label import Label
 from screenbounds import ScreenBounds
 from location import Location
+from pongball import PongBall
 import ppap
 
 # consider using async IO to complete coordination between threads
@@ -69,7 +70,7 @@ def attempt_add_game_controller(gcs: [], gc: GameController):
 
 class PongGame(Widget):
     ball = ObjectProperty(None)
-    balls = [ball]
+    balls = []
 
     player1 = ObjectProperty(None)
     region1 = ObjectProperty(None)
@@ -88,6 +89,8 @@ class PongGame(Widget):
 
     HORIZONTAL_ORIENTATION = 0
     VERTICAL_ORIENTATION = 1
+
+    player_ids_to_players = {}
 
     region_detector = RegionDetector()
 
@@ -108,7 +111,6 @@ class PongGame(Widget):
 
         region_lbl = Label()
         region_lbl.text = 'region'
-
 
     def class_init(self):
         if self.show_debug_labels:
@@ -155,11 +157,42 @@ class PongGame(Widget):
         attempt_add_game_controller(self.game_controllers, self.game_controller3)
         attempt_add_game_controller(self.game_controllers, self.game_controller4)
 
+        self.player_ids_to_players = {ppap.PLAYER1_ID: self.player1,
+                                      ppap.PLAYER2_ID: self.player2,
+                                      ppap.PLAYER3_ID: self.player3,
+                                      ppap.PLAYER4_ID: self.player4, }
+
     def serve_ball(self, vel=(4, 0)):
+        # remove the existing one
+        #if self.ball is not None and self.ball.initialized:
+        #    self.remove_widget(self.ball)
+        #elif self.ball is not None:
+        #    self.ball.initialized = True
+        #else:
+        #    # add the next one
+        #    self.ball = PongBall()
+        #    self.add_widget(self.ball)
         self.ball.center = self.center
         self.ball.velocity = vel
 
+    def check_create_ball(self):
+        if len(self.balls) == 0:
+            next_ball = PongBall()
+            self.balls.append(next_ball)
+            self.add_widget(next_ball)
+
+            rand_x_vel = 4 * (random.random() - 0.5)
+            rand_y_vel = 4 * (random.random() - 0.5)
+            next_ball.center = self.center
+            next_ball.velocity = (rand_x_vel, rand_y_vel)
+
+
     def update(self, dt):
+
+        self.check_create_ball()
+        for ball in self.balls:
+            ball.move()
+
 
         self.ball.move()
 
@@ -172,7 +205,15 @@ class PongGame(Widget):
         self.game_controller4.read_controller()
         self.player4.update_location()
 
+        # make the balls bounce off the paddles
+
         # bounce of paddles
+        self.player1.bounce_ball(self.ball)
+        self.player2.bounce_ball(self.ball)
+        self.player3.bounce_ball(self.ball)
+        self.player4.bounce_ball(self.ball)
+
+        # now check for scoring
         screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
         ball_location = Location(self.ball.x, self.ball.y)
         ball_region = self.region_detector.get_region(screen_bounds, ball_location)
@@ -180,21 +221,21 @@ class PongGame(Widget):
             ball_region,
             screen_bounds,
             ball_location)
-        self.player1.bounce_ball(self.ball)
-        self.player2.bounce_ball(self.ball)
-        self.player3.bounce_ball(self.ball)
-        self.player4.bounce_ball(self.ball)
 
         # went of to a side to score point?
         has_scored = False
 
-        #if not has_scored and self.region1.check_for_score(self.ball):
+        if scored_player_id in self.player_ids_to_players:
+            self.player_ids_to_players[scored_player_id].score_against(self.ball)
+            has_scored = True
+
+        # if not has_scored and self.region1.check_for_score(self.ball):
         #    has_scored = True
-        #elif not has_scored and self.region2.check_for_score(self.ball):
+        # elif not has_scored and self.region2.check_for_score(self.ball):
         #    has_scored = True
-        #elif not has_scored and self.region3.check_for_score(self.ball):
+        # elif not has_scored and self.region3.check_for_score(self.ball):
         #    has_scored = True
-        #elif not has_scored and self.region4.check_for_score(self.ball):
+        # elif not has_scored and self.region4.check_for_score(self.ball):
         #    has_scored = True
 
         if has_scored:
@@ -224,7 +265,6 @@ class PongGame(Widget):
             self.region_lbl.center_x = self.center_x
             self.region_lbl.center_y = self.center_y
             self.region_lbl.text = ppap.get_player_id_desc(scored_player_id)
-
 
         # if self.ball.x < self.x:
         #    self.player2.score += 1

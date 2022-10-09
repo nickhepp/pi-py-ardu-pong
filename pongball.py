@@ -14,6 +14,8 @@ class PongBall(Widget):
 
     _bounced_paddle = None
 
+    initialized = False
+
     # ``move`` function will move the ball one step. This
     #  will be called in equal intervals to animate the ball
     def move(self):
