@@ -46,11 +46,11 @@
     player1: player_left
     region1: region_left
 
-    player2: player_right
-    region2: region_right
+    player2: player_top
+    region2: region_top
 
-    player3: player_top
-    region3: region_top
+    player3: player_right
+    region3: region_right
 
     player4: player_bottom
     region4: region_bottom
@@ -65,21 +65,21 @@
         text: str(root.player1.score)
         color: player_left_color
 
-############# PLAYER 2 RIGHT LABEL #########
-    Label:
-        font_size: score_font_size
-        center_x: root.width * 5 / 6
-        center_y: root.height / 2
-        text: str(root.player2.score)
-        color: player_right_color
-
-############# PLAYER 3 TOP LABEL #########
+############# PLAYER 2 TOP LABEL #########
     Label:
         font_size: score_font_size
         center_x: root.width / 2
         center_y: root.height * 5 / 6
-        text: str(root.player3.score)
+        text: str(root.player2.score)
         color: player_top_color
+
+############# PLAYER 3 RIGHT LABEL #########
+    Label:
+        font_size: score_font_size
+        center_x: root.width * 5 / 6
+        center_y: root.height / 2
+        text: str(root.player3.score)
+        color: player_right_color
 
 ############# PLAYER 4 BOTTOM LABEL #########
     Label:
@@ -115,27 +115,7 @@
         x: root.x
         center_y: root.center_y
 
-############# PLAYER 2 RIGHT #########
-
-        canvas:
-            Color:
-                rgba: player_right_color
-    PongPaddle:
-        id: player_right
-        size: paddle_short_dim, paddle_long_dim
-        x: root.width - self.width
-        center_y: root.center_y
-        rgba: player_right_color
-        canvas:
-            Color:
-                rgba: 0, 1, 0, region_opacity
-    ScoreRegion:
-        id: region_right
-        size: region_short_dim, root.height
-        x: root.width - self.width
-        center_y: root.center_y
-
-############# PLAYER 3 TOP #########
+############# PLAYER 2 TOP #########
 
         canvas:
             Color:
@@ -154,6 +134,26 @@
         size: root.width, region_short_dim
         center_x: root.center_x
         y: root.height - self.height
+
+############# PLAYER 3 TOP #########
+
+        canvas:
+            Color:
+                rgba: player_right_color
+    PongPaddle:
+        id: player_right
+        size: paddle_short_dim, paddle_long_dim
+        x: root.width - self.width
+        center_y: root.center_y
+        rgba: player_right_color
+        canvas:
+            Color:
+                rgba: 0, 1, 0, region_opacity
+    ScoreRegion:
+        id: region_right
+        size: region_short_dim, root.height
+        x: root.width - self.width
+        center_y: root.center_y
 
 ############# PLAYER 4 BOTTOM #########
 

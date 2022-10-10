@@ -5,6 +5,7 @@ from kivy.properties import (
 from kivy.vector import Vector
 
 import gamecontrollerpoller
+import ppap
 from gamecontroller import GameController
 
 
@@ -74,10 +75,26 @@ class PongPaddle(Widget):
                 bounced = Vector(vx, -1 * vy)
                 vel = bounced * 1.1
                 ball.velocity = vel.x + offset_x, vel.y
-                # todo: move the ball so it doesnt keep hitting the underside of the paddle
-            else:
+                if self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_BOTTOM:
+                    ball.y = self.y - 1 - ball.height
+                    if ball.velocity_y > 0:
+                        ball.velocity_y = -ball.velocity_y
+                else: #self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_TOP:
+                    ball.y = self.top + 1
+                    if ball.velocity_y < 0:
+                        ball.velocity_y = -ball.velocity_y
+
+            else: # self._orientation == self.VERTICAL_ORIENTATION
                 offset_y = (ball.center_y - self.center_y) / (self.height / 2)
                 bounced = Vector(-1 * vx, vy)
                 vel = bounced * 1.1
                 ball.velocity = vel.x, vel.y + offset_y
-                # todo: move the ball so it doesnt keep hitting the underside of the paddle
+                if self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_RIGHT:
+                    ball.x = self.right + 1
+                    if ball.velocity_x < 0:
+                        ball.velocity_x = -ball.velocity_x
+                else: #self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_LEFT
+                    ball.right = self.x - 1
+                    if ball.velocity_x > 0:
+                        ball.velocity_x = -ball.velocity_x
+

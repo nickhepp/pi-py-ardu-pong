@@ -69,8 +69,6 @@ def attempt_add_game_controller(gcs: [], gc: GameController):
 
 
 class PongGame(Widget):
-    ball = ObjectProperty(None)
-
     player1 = ObjectProperty(None)
     region1 = ObjectProperty(None)
 
@@ -138,7 +136,7 @@ class PongGame(Widget):
             get_serial_by_color(PLAYER2_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player2.set_game_controller(self.game_controller2)
         self.player2.set_paddle_orientation(ppap.PLAYER2_ID,
-                                            self.VERTICAL_ORIENTATION,
+                                            self.HORIZONTAL_ORIENTATION,
                                             ppap.PADDLE_FACE_DIRECTION_BOTTOM)
         self.region2.set_paddle(self.player2)
 
@@ -147,7 +145,7 @@ class PongGame(Widget):
             get_serial_by_color(PLAYER3_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player3.set_game_controller(self.game_controller3)
         self.player3.set_paddle_orientation(ppap.PLAYER3_ID,
-                                            self.HORIZONTAL_ORIENTATION,
+                                            self.VERTICAL_ORIENTATION,
                                             ppap.PADDLE_FACE_DIRECTION_LEFT)
         self.region3.set_paddle(self.player3)
 
@@ -177,10 +175,6 @@ class PongGame(Widget):
                                       ppap.PLAYER4_ID: self.player4, }
         ##def class_init(self):
 
-    def serve_ball(self, vel=(4, 0)):
-        self.ball.center = self.center
-        self.ball.velocity = vel
-
     def check_create_ball(self):
         if len(self.balls) == 0:
             next_ball = PongBall()
@@ -200,7 +194,6 @@ class PongGame(Widget):
         # make the balls move
         for ball in self.balls:
             ball.move()
-        self.ball.move()
 
         # read the controller IO
         for controller in self.controllers:
@@ -210,17 +203,8 @@ class PongGame(Widget):
         for player_id in self.player_ids_to_players:
             self.player_ids_to_players[player_id].update_location()
 
-
-        #self.game_controller1.read_controller()
-        #self.player1.update_location()
-        #self.game_controller2.read_controller()
-        #self.player2.update_location()
-        #self.game_controller3.read_controller()
-        #self.player3.update_location()
-        #self.game_controller4.read_controller()
-        #self.player4.update_location()
-
         # make the balls bounce off the paddles
+        scored_player_id: int
         screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
         for ball in self.balls:
 
@@ -239,48 +223,7 @@ class PongGame(Widget):
                 self.player_ids_to_players[scored_player_id].score_against(ball)
                 self.remove_widget(ball)
                 self.balls.remove(ball)
-
-        # bounce of paddles
-        self.player1.bounce_ball(self.ball)
-        self.player2.bounce_ball(self.ball)
-        self.player3.bounce_ball(self.ball)
-        self.player4.bounce_ball(self.ball)
-
-        # now check for scoring
-
-        ball_location = Location(self.ball.x, self.ball.y)
-        ball_region = self.region_detector.get_region(screen_bounds, ball_location)
-        scored_player_id = self.region_detector.get_scored_on_player_from_ball_location(
-            ball_region,
-            screen_bounds,
-            ball_location)
-
-        # went of to a side to score point?
-        has_scored = False
-
-        if scored_player_id in self.player_ids_to_players:
-            self.player_ids_to_players[scored_player_id].score_against(self.ball)
-            has_scored = True
-
-        # if not has_scored and self.region1.check_for_score(self.ball):
-        #    has_scored = True
-        # elif not has_scored and self.region2.check_for_score(self.ball):
-        #    has_scored = True
-        # elif not has_scored and self.region3.check_for_score(self.ball):
-        #    has_scored = True
-        # elif not has_scored and self.region4.check_for_score(self.ball):
-        #    has_scored = True
-
-        if has_scored:
-            rand_val: int = random.randint(0, 3)
-            if rand_val == 0:
-                self.serve_ball(vel=(4, 0))
-            elif rand_val == 1:
-                self.serve_ball(vel=(-4, 0))
-            elif rand_val == 2:
-                self.serve_ball(vel=(0, 4))
-            else:  # 3
-                self.serve_ball(vel=(0, -4))
+                self.check_create_ball()
 
         if self.show_debug_labels:
             self.btm_left_lbl.x = self.x + 10
@@ -304,14 +247,13 @@ class PongGame(Widget):
         if touch.x < self.width / 3:
             self.player1.center_y = touch.y
         if touch.x > self.width - self.width / 3:
-            self.player2.center_y = touch.y
+            self.player3.center_y = touch.y
 
 
 class PongApp(App):
     def build(self):
         game = PongGame()
         game.class_init()
-        game.serve_ball()
         Clock.schedule_interval(game.update, 1.0 / 60.0)
 
         if len(game.game_controllers) > 0:
