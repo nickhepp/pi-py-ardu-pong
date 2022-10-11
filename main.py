@@ -45,8 +45,8 @@ import ppap
 # TODO: pressing a button can launch a ball
 
 PLAYER1_CONTROLLER_COLOR: int = 0xFF0000
-PLAYER2_CONTROLLER_COLOR: int = 0x00FF00
-PLAYER3_CONTROLLER_COLOR: int = 0x0000FF
+PLAYER2_CONTROLLER_COLOR: int = 0x0000FF
+PLAYER3_CONTROLLER_COLOR: int = 0x00FF00
 PLAYER4_CONTROLLER_COLOR: int = 0xFFFF00
 
 SERIAL_PORT_NAME_NAME = 'serial_port_name'
@@ -199,13 +199,14 @@ class PongGame(Widget):
         for controller in self.controllers:
             controller.read_controller()
 
+        screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
+
         # update the paddle locations
         for player_id in self.player_ids_to_players:
-            self.player_ids_to_players[player_id].update_location()
+            self.player_ids_to_players[player_id].update_location(screen_bounds)
 
         # make the balls bounce off the paddles
         scored_player_id: int
-        screen_bounds = ScreenBounds(self.x, self.y, self.top, self.right)
         for ball in self.balls:
 
             # see if the ball is going to bounce

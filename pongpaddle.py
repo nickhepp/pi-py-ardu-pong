@@ -7,6 +7,7 @@ from kivy.vector import Vector
 import gamecontrollerpoller
 import ppap
 from gamecontroller import GameController
+from screenbounds import ScreenBounds
 
 
 class PongPaddle(Widget):
@@ -43,17 +44,30 @@ class PongPaddle(Widget):
     def set_game_controller(self, game_controller: GameController):
         self._game_controller = game_controller
 
-    def update_location(self):
+    def update_location(self, screen_bounds: ScreenBounds):
         if self._orientation == self.VERTICAL_ORIENTATION:
             if self._game_controller.y_axis == gamecontrollerpoller.Y_AXIS_UP:
                 self.center_y += self.LOCATION_UPDATE_AMOUNT
             elif self._game_controller.y_axis == gamecontrollerpoller.Y_AXIS_DOWN:
                 self.center_y -= self.LOCATION_UPDATE_AMOUNT
+
+            if self.top > screen_bounds.top:
+                self.top = screen_bounds.top
+            elif self.y < screen_bounds.bottom:
+                self.y = screen_bounds.bottom
+
         if self._orientation == self.HORIZONTAL_ORIENTATION:
             if self._game_controller.x_axis == gamecontrollerpoller.X_AXIS_LEFT:
                 self.center_x -= self.LOCATION_UPDATE_AMOUNT
             elif self._game_controller.x_axis == gamecontrollerpoller.X_AXIS_RIGHT:
                 self.center_x += self.LOCATION_UPDATE_AMOUNT
+
+            if self.right > screen_bounds.right:
+                self.right = screen_bounds.right
+            elif self.x < screen_bounds.left:
+                self.x = screen_bounds.left
+
+
 
     def score_against(self, ball):
         # this paddle is scored against, take away the score
