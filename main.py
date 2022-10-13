@@ -27,15 +27,8 @@ import ppap
 # The hope of the multi process architecture is that the IO operations
 # wont block the app from running as expected.
 
-# TODO: fix ball scoring mechanics
-
-# TODO: when paddle hits a ball transport ball past the paddle so it doesnt go past it like it does sometimes
-
-# TODO: scoring on a side subtracts a point from that side
 
 # TODO: single process with single queue
-
-# TODO: dont let paddles go off screen
 
 # TODO: make paddles bounce out for extra speed boost of ball, and then temporarily pause or become translucent
 #       not able to bounce the balls for a duration (1 sec?)
