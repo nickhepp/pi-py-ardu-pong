@@ -1,3 +1,5 @@
+from time import sleep
+
 import pongball, pongpaddle, scoreregion
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -10,6 +12,7 @@ from gamecontroller import GameController
 import gamecontrollerprovider
 from multiprocessing import Process, Queue, Pool
 from gamecontrollerpoller import GameControllerPoller
+from possibleserialport import PossibleSerialPort
 from regiondetector import RegionDetector
 from kivy.uix.label import Label
 from screenbounds import ScreenBounds
@@ -56,9 +59,7 @@ def get_serial_by_color(clr: int, serial_ports_by_colors: {}):
 
 def attempt_add_game_controller(gcs: [], gc: GameController):
     if gc.has_serial_port():
-        gcs.append({
-            SERIAL_PORT_NAME_NAME: gc.serial_port_name,
-            QUEUE_NAME: gc.queue})
+        gcs.append(gc)
 
 
 class PongGame(Widget):
@@ -117,7 +118,9 @@ class PongGame(Widget):
         serial_ports_by_colors = gc_provider.get_controllers()
 
         # red, color, com_port, queue
-        self.game_controller1 = GameController(get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
+        self.game_controller1 = GameController(
+            ppap.PLAYER1_ID,
+            get_serial_by_color(PLAYER1_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player1.set_game_controller(self.game_controller1)
         self.player1.set_paddle_orientation(ppap.PLAYER1_ID,
                                             self.VERTICAL_ORIENTATION,
@@ -126,6 +129,7 @@ class PongGame(Widget):
 
         # green
         self.game_controller2 = GameController(
+            ppap.PLAYER2_ID,
             get_serial_by_color(PLAYER2_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player2.set_game_controller(self.game_controller2)
         self.player2.set_paddle_orientation(ppap.PLAYER2_ID,
@@ -135,6 +139,7 @@ class PongGame(Widget):
 
         # blue
         self.game_controller3 = GameController(
+            ppap.PLAYER3_ID,
             get_serial_by_color(PLAYER3_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player3.set_game_controller(self.game_controller3)
         self.player3.set_paddle_orientation(ppap.PLAYER3_ID,
@@ -144,6 +149,7 @@ class PongGame(Widget):
 
         # yellow
         self.game_controller4 = GameController(
+            ppap.PLAYER4_ID,
             get_serial_by_color(PLAYER4_CONTROLLER_COLOR, serial_ports_by_colors))
         self.player4.set_game_controller(self.game_controller4)
         self.player4.set_paddle_orientation(ppap.PLAYER4_ID,
@@ -251,20 +257,33 @@ class PongApp(App):
         Clock.schedule_interval(game.update, 1.0 / 60.0)
 
         if len(game.game_controllers) > 0:
+            #p = Process(target=run_controller, args=(game.game_controllers,))
+            gcs: [] = []
             for gc in game.game_controllers:
-                p = Process(target=run_controller, args=(gc,))
-                p.start()
+                #gcs.append([])
+                #sp = {'player_id': gc.player_id, 'serial_port_name': gc.serial_port_name, 'queue': gc.queue}
+                sp = PossibleSerialPort(serial_port_name=gc.serial_port_name,
+                     player_id=gc.player_id,
+                     queue=gc.queue)
+                gcs.append(sp)
+            #p = Process(target=run_controller, args=(gcs,))
+            # works 1
+            #p = Process(target=run_controller,
+            #            args=(game.game_controllers[0].player_id, game.game_controllers[0].serial_port_name, game.game_controllers[0].queue))
+
+            p = Process(target=run_controller, args=(gcs,))
+            p.start()
 
         return game
 
-
-def run_controller(port_args: {}):
-    gcp = GameControllerPoller(port_args[SERIAL_PORT_NAME_NAME], port_args[QUEUE_NAME])
+# works 1
+#def run_controller(player_id: int, serial_port_name: str, queue: Queue):
+def run_controller(gcs: []):
+    gcs = gcs
+    gcp = GameControllerPoller(gcs)
 
     while True:
         gcp.read_physical_controller()
-        # print(port_args[SERIAL_PORT_NAME_NAME])
-        # time.sleep(0.500)
 
 
 if __name__ == '__main__':

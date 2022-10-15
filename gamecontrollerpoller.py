@@ -1,7 +1,15 @@
-from multiprocessing import Process, Queue
+from datetime import datetime
+from datetime import timedelta
+from multiprocessing import Queue
+
+from serial import Serial
+
 import gamecontrollerresponse
 import serialportfactory
 from time import sleep
+from typing import Type, Dict
+from possibleserialport import PossibleSerialPort
+from gamecontrollerdata import GameControllerData
 
 SENSOR_DATA_START = 'kit:'
 LEFT_RIGHT_INDEX = 0
@@ -25,25 +33,32 @@ Y_AXIS_UP = 1
 Y_AXIS_MIDDLE = 0
 Y_AXIS_DOWN = -1
 
-class GameControllerPoller:
-    def __init__(self, serial_port_name: str, queue: Queue):
-        self.serial_port_name: str = serial_port_name
-        self.queue = queue
-        self.serial_port = serialportfactory.get_serial_port(serial_port_name)
 
-    def read_physical_controller(self):
-        if self.queue.full():
+class GameControllerPoller:
+    def __init__(self, serial_ports: Type[PossibleSerialPort]):
+        self.serial_ports: Dict[int, Serial] = {}
+        self.queues: Dict[int, Queue] = {}
+        self.previous_data: Dict[int, GameControllerData] = {}
+        self.next_time = None
+
+        for serial_port in serial_ports:
+            sp = serialportfactory.get_serial_port(serial_port.serial_port_name)
+            self.serial_ports[serial_port.player_id] = sp
+            self.queues[serial_port.player_id] = serial_port.queue
+
+    def put_sensor_data(self, player_id: int):
+        if self.queues[player_id].full():
             return
 
-        sleep(0.333)
-        sensor_data: str = gamecontrollerresponse.send_command_read_response('edpf_kit_read', self.serial_port)
-
+        sensor_data: str = gamecontrollerresponse.send_command_read_response(
+            'edpf_kit_read',
+            self.serial_ports[player_id])
 
         # look to see if this is the data we are looking for
         if sensor_data.startswith(SENSOR_DATA_START):
             # strip the beginning
             sensor_data = sensor_data[len(SENSOR_DATA_START):]
-            # strip any left over cruft
+            # strip any leftover cruft
             sensor_data = sensor_data.strip('\r\n')
 
             sensor_data_vals = [int(item) for item in sensor_data.split(',') if item.isdigit()]
@@ -55,23 +70,45 @@ class GameControllerPoller:
             pb3_val: int = sensor_data_vals[PB3_INDEX]
             pb4_val: int = sensor_data_vals[PB4_INDEX]
 
-            gc_vals = {}
             if LEFT_RANGE['min'] <= x_axis_val <= LEFT_RANGE['max']:
-                gc_vals[X_AXIS_NAME] = X_AXIS_LEFT
+                x_axis_val = X_AXIS_LEFT
             elif RIGHT_RANGE['min'] <= x_axis_val <= RIGHT_RANGE['max']:
-                gc_vals[X_AXIS_NAME] = X_AXIS_RIGHT
+                x_axis_val = X_AXIS_RIGHT
             else:
-                gc_vals[X_AXIS_NAME] = X_AXIS_MIDDLE
+                x_axis_val = X_AXIS_MIDDLE
 
             if UP_RANGE['min'] <= y_axis_val <= UP_RANGE['max']:
-                gc_vals[Y_AXIS_NAME] = Y_AXIS_UP
+                y_axis_val = Y_AXIS_UP
             elif DOWN_RANGE['min'] <= y_axis_val <= DOWN_RANGE['max']:
-                gc_vals[Y_AXIS_NAME] = Y_AXIS_DOWN
+                y_axis_val = Y_AXIS_DOWN
             else:
-                gc_vals[Y_AXIS_NAME] = Y_AXIS_MIDDLE
+                y_axis_val = Y_AXIS_MIDDLE
 
             try:
-                self.queue.put_nowait(gc_vals)
+                gcd: GameControllerData = GameControllerData(player_id=player_id,
+                                                             x_axis=x_axis_val,
+                                                             y_axis=y_axis_val,
+                                                             joystick=joystick_val,
+                                                             pb1=pb1_val,
+                                                             pb2=pb2_val,
+                                                             pb3=pb3_val,
+                                                             pb4=pb4_val)
+
+                if (player_id not in self.previous_data) or \
+                        self.previous_data[player_id] != gcd:
+                    self.queues[player_id].put_nowait(gcd)
+                    self.previous_data[player_id] = gcd
             except Exception as exc:
                 exc = exc
-                # stuff
+
+    def read_physical_controller(self):
+        start_time: datetime = datetime.now()
+        if (self.next_time is None) or (start_time > self.next_time):
+            #self.next_time = start_time + timedelta(seconds=0.333)
+
+            # read all the controllers
+            for player_id in self.serial_ports:
+                self.put_sensor_data(player_id)
+
+        else:
+            sleep(.050)
