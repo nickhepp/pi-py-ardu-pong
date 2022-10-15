@@ -18,6 +18,7 @@ from kivy.uix.label import Label
 from screenbounds import ScreenBounds
 from location import Location
 from pongball import PongBall
+from kivy.core.window import Window
 import ppap
 
 # consider using async IO to complete coordination between threads
@@ -206,6 +207,7 @@ class PongGame(Widget):
             spawned_balls: [] = self.player_ids_to_players[player_id].get_spawned_balls()
             for spawned_ball in spawned_balls:
                 self.balls.append(spawned_ball)
+                self.add_widget(spawned_ball)
 
         # make the balls bounce off the paddles
         scored_player_id: int
@@ -283,4 +285,5 @@ def run_controller(gcs: []):
 
 
 if __name__ == '__main__':
+    #Window.fullscreen = True
     PongApp().run()

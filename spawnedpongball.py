@@ -21,6 +21,11 @@ class SpawnedPongBall(PongBall):
             self.rgba = self._ready_color
             self._ready = True
 
+    def reset_ball_age(self):
+        self._ball_age = 0
+        self.rgba = self._not_ready_color
+        self._ready = False
+
     def set_player_info(self, player_id: int, color):
         self._player_id = player_id
         self._ready_color = color

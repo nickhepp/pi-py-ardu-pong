@@ -94,10 +94,11 @@ class GameControllerPoller:
                                                              pb3=pb3_val,
                                                              pb4=pb4_val)
 
-                if (player_id not in self.previous_data) or \
-                        self.previous_data[player_id] != gcd:
-                    self.queues[player_id].put_nowait(gcd)
-                    self.previous_data[player_id] = gcd
+                self.queues[player_id].put_nowait(gcd)
+                #if (player_id not in self.previous_data) or \
+                #        self.previous_data[player_id] != gcd:
+                #    self.queues[player_id].put_nowait(gcd)
+                #    self.previous_data[player_id] = gcd
             except Exception as exc:
                 exc = exc
 

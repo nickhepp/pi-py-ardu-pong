@@ -9,6 +9,7 @@ from kivy.vector import Vector
 import gamecontrollerpoller
 import ppap
 from gamecontroller import GameController
+from pongball import PongBall
 from screenbounds import ScreenBounds
 from spawnedpongball import SpawnedPongBall
 
@@ -86,23 +87,23 @@ class PongPaddle(Widget):
         elif paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_BOTTOM:
             self.spb_directions = {
                 ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
-                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
                 ppap.PB3_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
-                ppap.PB4_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
             }
         elif paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_LEFT:
             self.spb_directions = {
-                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
-                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
-                ppap.PB3_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
-                ppap.PB4_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB3_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
             }
         else: #if paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_TOP:
             self.spb_directions = {
-                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
-                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
-                ppap.PB3_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
-                ppap.PB4_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB3_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
             }
 
 
@@ -170,7 +171,14 @@ class PongPaddle(Widget):
         for pb_index in self.spbs:
             button_pressed = self._game_controller.get_push_button(pb_index)
             if (button_pressed == ppap.PUSH_BUTTON_PRESSED) and self.spbs[pb_index].get_is_ready():
-                pb_index = pb_index
+                pb = PongBall()
+                pb.set_bounced_paddle(self)
+                pb.velocity_x = self.spb_directions[pb_index][0]
+                pb.velocity_y = self.spb_directions[pb_index][1]
+                pb.center = self.spbs[pb_index].center
+                pb.rgba = self.rgba
+                spawn_balls.append(pb)
+                self.spbs[pb_index].reset_ball_age()
 
         return spawn_balls
         #if self._game_controller.pb1 == ppap.PUSH_BUTTON_PRESSED and self.spb1.get_is_ready():
