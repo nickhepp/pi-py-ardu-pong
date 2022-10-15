@@ -1,3 +1,5 @@
+from typing import Dict, Tuple
+
 from kivy.uix.widget import Widget
 from kivy.properties import (
     NumericProperty, ListProperty
@@ -8,6 +10,7 @@ import gamecontrollerpoller
 import ppap
 from gamecontroller import GameController
 from screenbounds import ScreenBounds
+from spawnedpongball import SpawnedPongBall
 
 
 class PongPaddle(Widget):
@@ -25,7 +28,16 @@ class PongPaddle(Widget):
     player_id: int = 0
     paddle_face_direction: int = 0
 
-    def grow_balls(self):
+    spb1: SpawnedPongBall = None
+    spb2: SpawnedPongBall = None
+    spb3: SpawnedPongBall = None
+    spb4: SpawnedPongBall = None
+
+    spbs: Dict[int, SpawnedPongBall] = None
+    spb_directions: Dict[int, Tuple] = None
+
+
+    def age_spawn_balls(self):
         if self.current_ball_size < self.READY_BALL_SIZE:
             self.current_ball_size += 1
 
@@ -41,10 +53,64 @@ class PongPaddle(Widget):
         self._orientation = orientation
         self.paddle_face_direction = paddle_face_direction
 
+        # setup the spawn balls
+        self.spb1 = SpawnedPongBall()
+        self.spb2 = SpawnedPongBall()
+        self.spb3 = SpawnedPongBall()
+        self.spb4 = SpawnedPongBall()
+        self.spbs = {ppap.PB1_INDEX: self.spb1,
+                     ppap.PB2_INDEX: self.spb2,
+                     ppap.PB3_INDEX: self.spb3,
+                     ppap.PB4_INDEX: self.spb4}
+
+        self.spb1.set_player_info(player_id, self.rgba)
+        self.parent.add_widget(self.spb1, ppap.SPAWN_BALLS_Z_INDEX)
+
+        self.spb2.set_player_info(player_id, self.rgba)
+        self.parent.add_widget(self.spb2, ppap.SPAWN_BALLS_Z_INDEX)
+
+        self.spb3.set_player_info(player_id, self.rgba)
+        self.parent.add_widget(self.spb3, ppap.SPAWN_BALLS_Z_INDEX)
+
+        self.spb4.set_player_info(player_id, self.rgba)
+        self.parent.add_widget(self.spb4, ppap.SPAWN_BALLS_Z_INDEX)
+
+        # setup the vectors for when new spawn balls are deployed
+        if paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_RIGHT:
+            self.spb_directions = {
+                ppap.PB1_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB3_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+            }
+        elif paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_BOTTOM:
+            self.spb_directions = {
+                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB3_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+            }
+        elif paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_LEFT:
+            self.spb_directions = {
+                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB3_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, -ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+            }
+        else: #if paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_TOP:
+            self.spb_directions = {
+                ppap.PB1_INDEX: (-ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+                ppap.PB2_INDEX: (-ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB3_INDEX: (ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED),
+                ppap.PB4_INDEX: (ppap.SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED, ppap.SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED),
+            }
+
+
     def set_game_controller(self, game_controller: GameController):
         self._game_controller = game_controller
 
     def update_location(self, screen_bounds: ScreenBounds):
+        # move the paddle
         if self._orientation == self.VERTICAL_ORIENTATION:
             if self._game_controller.y_axis == gamecontrollerpoller.Y_AXIS_UP:
                 self.center_y += self.LOCATION_UPDATE_AMOUNT
@@ -66,6 +132,48 @@ class PongPaddle(Widget):
                 self.right = screen_bounds.right
             elif self.x < screen_bounds.left:
                 self.x = screen_bounds.left
+
+        # now figure out where the spawn balls go
+        ball_size = self.spb1.width
+        pball_center_x: int
+        pball_center_y: int
+        if self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_RIGHT:
+            pball_center_y = self.center_y
+            pball_center_x = self.right + ball_size
+        elif self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_LEFT:
+            pball_center_y = self.center_y
+            pball_center_x = self.x - ball_size
+        elif self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_TOP:
+            pball_center_x = self.center_x
+            pball_center_y = self.top + ball_size
+        else: # self.paddle_face_direction == ppap.PADDLE_FACE_DIRECTION_BOTTOM:
+            pball_center_x = self.center_x
+            pball_center_y = self.y - ball_size
+
+        self.spb1.center_x = pball_center_x - (0.5 * ball_size)
+        self.spb1.center_y = pball_center_y + (0.5 * ball_size)
+
+        self.spb2.center_x = pball_center_x + (0.5 * ball_size)
+        self.spb2.center_y = pball_center_y + (0.5 * ball_size)
+
+        self.spb3.center_x = pball_center_x + (0.5 * ball_size)
+        self.spb3.center_y = pball_center_y - (0.5 * ball_size)
+
+        self.spb4.center_x = pball_center_x - (0.5 * ball_size)
+        self.spb4.center_y = pball_center_y - (0.5 * ball_size)
+
+        for pb_index in self.spbs:
+            self.spbs[pb_index].age_ball()
+
+    def get_spawned_balls(self) -> []:
+        spawn_balls: [] = []
+        for pb_index in self.spbs:
+            button_pressed = self._game_controller.get_push_button(pb_index)
+            if (button_pressed == ppap.PUSH_BUTTON_PRESSED) and self.spbs[pb_index].get_is_ready():
+                pb_index = pb_index
+
+        return spawn_balls
+        #if self._game_controller.pb1 == ppap.PUSH_BUTTON_PRESSED and self.spb1.get_is_ready():
 
 
 

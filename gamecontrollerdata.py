@@ -19,7 +19,7 @@ class GameControllerData:
                self.x_axis == other.x_axis and \
                self.y_axis == other.y_axis and \
                self.joystick == other.joystick and \
-               self.pb1 == other.pb1 and \
-               self.pb2 == other.pb2 and \
-               self.pb3 == other.pb3 and \
-               self.pb4 == other.pb4
+               self.pb1 == other.spb1 and \
+               self.pb2 == other.spb2 and \
+               self.pb3 == other.spb3 and \
+               self.pb4 == other.spb4

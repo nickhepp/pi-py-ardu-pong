@@ -203,6 +203,9 @@ class PongGame(Widget):
         # update the paddle locations
         for player_id in self.player_ids_to_players:
             self.player_ids_to_players[player_id].update_location(screen_bounds)
+            spawned_balls: [] = self.player_ids_to_players[player_id].get_spawned_balls()
+            for spawned_ball in spawned_balls:
+                self.balls.append(spawned_ball)
 
         # make the balls bounce off the paddles
         scored_player_id: int
@@ -254,7 +257,7 @@ class PongApp(App):
     def build(self):
         game = PongGame()
         game.class_init()
-        Clock.schedule_interval(game.update, 1.0 / 60.0)
+        Clock.schedule_interval(game.update, 1.0 / ppap.UPDATES_PER_SECOND)
 
         if len(game.game_controllers) > 0:
             #p = Process(target=run_controller, args=(game.game_controllers,))
@@ -266,22 +269,15 @@ class PongApp(App):
                      player_id=gc.player_id,
                      queue=gc.queue)
                 gcs.append(sp)
-            #p = Process(target=run_controller, args=(gcs,))
-            # works 1
-            #p = Process(target=run_controller,
-            #            args=(game.game_controllers[0].player_id, game.game_controllers[0].serial_port_name, game.game_controllers[0].queue))
 
             p = Process(target=run_controller, args=(gcs,))
             p.start()
 
         return game
 
-# works 1
-#def run_controller(player_id: int, serial_port_name: str, queue: Queue):
-def run_controller(gcs: []):
-    gcs = gcs
-    gcp = GameControllerPoller(gcs)
 
+def run_controller(gcs: []):
+    gcp = GameControllerPoller(gcs)
     while True:
         gcp.read_physical_controller()
 

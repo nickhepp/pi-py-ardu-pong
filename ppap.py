@@ -19,6 +19,20 @@ def get_player_id_desc(player_id: int) -> str:
 
 
 ########################################################
+UPDATES_PER_SECOND = 60.0
+AGE_BALL_SECONDS = 5.0
+AGE_BALL_UPDATES = UPDATES_PER_SECOND * AGE_BALL_SECONDS
+
+########################################################
+SPAWN_BALLS_Z_INDEX = 100
+SPAWN_BALL_INITIAL_SPEED = 4
+SPAWN_BALL_INITIAL_MAJOR_COMPONENT_SPEED = SPAWN_BALL_INITIAL_SPEED * 0.75
+SPAWN_BALL_INITIAL_MINOR_COMPONENT_SPEED = SPAWN_BALL_INITIAL_SPEED * 0.25
+
+PUSH_BUTTON_PRESSED = 1
+PUSH_BUTTON_NOT_PRESSED = 0
+
+########################################################
 HORIZ_LEFT = -1
 HORIZ_MIDDLE = 0
 HORIZ_RIGHT = 1
@@ -52,5 +66,9 @@ Y_AXIS_MIDDLE = 0
 Y_AXIS_DOWN = -1
 
 
-
+########################################################
+PB1_INDEX = 1
+PB2_INDEX = 2
+PB3_INDEX = 3
+PB4_INDEX = 4
 
