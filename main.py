@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from time import sleep
 
 import pongball, pongpaddle, scoreregion
@@ -65,16 +66,16 @@ def attempt_add_game_controller(gcs: [], gc: GameController):
 
 class PongGame(Widget):
     player1 = ObjectProperty(None)
-    region1 = ObjectProperty(None)
+    #region1 = ObjectProperty(None)
 
     player2 = ObjectProperty(None)
-    region2 = ObjectProperty(None)
+    #region2 = ObjectProperty(None)
 
     player3 = ObjectProperty(None)
-    region3 = ObjectProperty(None)
+    #region3 = ObjectProperty(None)
 
     player4 = ObjectProperty(None)
-    region4 = ObjectProperty(None)
+    #region4 = ObjectProperty(None)
 
     balls = ListProperty([])
     players = ListProperty([])
@@ -90,28 +91,17 @@ class PongGame(Widget):
 
     show_debug_labels = True
 
+    prev_frame_count = 0
+    frame_count = 0
+    next_frame_time = None
+    frame_time = None
+
     if show_debug_labels:
-        btm_left_lbl = Label()
-        btm_left_lbl.text = 'btm_left'
-
-        btm_right_lbl = Label()
-        btm_right_lbl.text = 'btm_right'
-
-        top_left_lbl = Label()
-        top_left_lbl.text = 'top_left'
-
-        top_right_lbl = Label()
-        top_right_lbl.text = 'top_right'
-
         region_lbl = Label()
         region_lbl.text = 'region'
 
     def class_init(self):
         if self.show_debug_labels:
-            self.add_widget(self.btm_left_lbl)
-            self.add_widget(self.btm_right_lbl)
-            self.add_widget(self.top_left_lbl)
-            self.add_widget(self.top_right_lbl)
             self.add_widget(self.region_lbl)
 
         gc_provider = gamecontrollerprovider.GameControllerProvider()
@@ -126,7 +116,7 @@ class PongGame(Widget):
         self.player1.set_paddle_orientation(ppap.PLAYER1_ID,
                                             self.VERTICAL_ORIENTATION,
                                             ppap.PADDLE_FACE_DIRECTION_RIGHT)
-        self.region1.set_paddle(self.player1)
+        #self.region1.set_paddle(self.player1)
 
         # green
         self.game_controller2 = GameController(
@@ -136,7 +126,7 @@ class PongGame(Widget):
         self.player2.set_paddle_orientation(ppap.PLAYER2_ID,
                                             self.HORIZONTAL_ORIENTATION,
                                             ppap.PADDLE_FACE_DIRECTION_BOTTOM)
-        self.region2.set_paddle(self.player2)
+        #self.region2.set_paddle(self.player2)
 
         # blue
         self.game_controller3 = GameController(
@@ -146,7 +136,7 @@ class PongGame(Widget):
         self.player3.set_paddle_orientation(ppap.PLAYER3_ID,
                                             self.VERTICAL_ORIENTATION,
                                             ppap.PADDLE_FACE_DIRECTION_LEFT)
-        self.region3.set_paddle(self.player3)
+        #self.region3.set_paddle(self.player3)
 
         # yellow
         self.game_controller4 = GameController(
@@ -156,7 +146,7 @@ class PongGame(Widget):
         self.player4.set_paddle_orientation(ppap.PLAYER4_ID,
                                             self.HORIZONTAL_ORIENTATION,
                                             ppap.PADDLE_FACE_DIRECTION_TOP)
-        self.region4.set_paddle(self.player4)
+        #self.region4.set_paddle(self.player4)
 
         self.game_controllers = []
         attempt_add_game_controller(self.game_controllers, self.game_controller1)
@@ -173,7 +163,6 @@ class PongGame(Widget):
                                       ppap.PLAYER2_ID: self.player2,
                                       ppap.PLAYER3_ID: self.player3,
                                       ppap.PLAYER4_ID: self.player4, }
-        ##def class_init(self):
 
     def check_create_ball(self):
         if len(self.balls) == 0:
@@ -181,8 +170,21 @@ class PongGame(Widget):
             self.balls.append(next_ball)
             self.add_widget(next_ball)
 
-            rand_x_vel = 4 * (random.random() - 0.5)
-            rand_y_vel = 4 * (random.random() - 0.5)
+            random_dir_x = random.random()
+            if random_dir_x > 0.5:
+                random_dir_x = 1
+            else:
+                random_dir_x = -1
+            random_factor_x = random.random()
+
+            random_dir_y = random.random()
+            if random_dir_y > 0.5:
+                random_dir_y = 1
+            else:
+                random_dir_y = -1;
+            random_factor_y = 1 - random_factor_x
+            rand_x_vel = ppap.SPAWN_BALL_INITIAL_SPEED * random_factor_x * random_dir_x
+            rand_y_vel = ppap.SPAWN_BALL_INITIAL_SPEED * random_factor_y * random_dir_y
             next_ball.center = self.center
             next_ball.velocity = (rand_x_vel, rand_y_vel)
 
@@ -231,22 +233,27 @@ class PongGame(Widget):
                 self.check_create_ball()
 
         if self.show_debug_labels:
-            self.btm_left_lbl.x = self.x + 10
-            self.btm_left_lbl.y = self.y + 10
+            self.frame_count += 1
+            now_time = datetime.now()
+            if self.frame_time is None:
+                self.frame_time = now_time
+                self.next_frame_time = self.frame_time + timedelta(seconds=1)
+            elif self.next_frame_time < now_time:
+                diff_frame_count = self.frame_count - self.prev_frame_count
+                diff_frame_time = now_time - self.frame_time
+                diff_fps: int
+                if diff_frame_time.seconds > 0:
+                    diff_fps = diff_frame_count / diff_frame_time.seconds
+                else:
+                    diff_fps = 0
+                self.frame_time = now_time
+                self.next_frame_time = now_time + timedelta(seconds=1)
+                self.prev_frame_count = self.frame_count
 
-            self.btm_right_lbl.x = self.right - 10 - self.btm_left_lbl.width
-            self.btm_right_lbl.y = self.y + 10
-
-            self.top_left_lbl.x = self.x + 10
-            self.top_left_lbl.y = self.top - 10 - self.top_left_lbl.height
-
-            self.top_right_lbl.x = self.right - 10 - self.btm_left_lbl.width
-            self.top_right_lbl.y = self.top - 10 - self.top_left_lbl.height
+                self.region_lbl.text = f'{diff_fps:.1f} fps'
 
             self.region_lbl.center_x = self.center_x
             self.region_lbl.center_y = self.center_y
-            self.region_lbl.text = ppap.get_player_id_desc(scored_player_id)
-
 
     def on_touch_move(self, touch):
         if touch.x < self.width / 3:
@@ -262,14 +269,14 @@ class PongApp(App):
         Clock.schedule_interval(game.update, 1.0 / ppap.UPDATES_PER_SECOND)
 
         if len(game.game_controllers) > 0:
-            #p = Process(target=run_controller, args=(game.game_controllers,))
+            # p = Process(target=run_controller, args=(game.game_controllers,))
             gcs: [] = []
             for gc in game.game_controllers:
-                #gcs.append([])
-                #sp = {'player_id': gc.player_id, 'serial_port_name': gc.serial_port_name, 'queue': gc.queue}
+                # gcs.append([])
+                # sp = {'player_id': gc.player_id, 'serial_port_name': gc.serial_port_name, 'queue': gc.queue}
                 sp = PossibleSerialPort(serial_port_name=gc.serial_port_name,
-                     player_id=gc.player_id,
-                     queue=gc.queue)
+                                        player_id=gc.player_id,
+                                        queue=gc.queue)
                 gcs.append(sp)
 
             p = Process(target=run_controller, args=(gcs,))
@@ -285,5 +292,4 @@ def run_controller(gcs: []):
 
 
 if __name__ == '__main__':
-    #Window.fullscreen = True
     PongApp().run()

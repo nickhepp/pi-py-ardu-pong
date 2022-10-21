@@ -5,6 +5,7 @@ from multiprocessing import Queue
 from serial import Serial
 
 import gamecontrollerresponse
+import ppap
 import serialportfactory
 from time import sleep
 from typing import Type, Dict
@@ -20,8 +21,8 @@ PB2_INDEX = 4
 PB3_INDEX = 5
 PB4_INDEX = 6
 
-LEFT_RANGE = UP_RANGE = dict(min=700, max=1024)
-RIGHT_RANGE = DOWN_RANGE = dict(min=0, max=300)
+LEFT_RANGE = UP_RANGE = dict(min=ppap.AXIS_MIDPOINT + ppap.AXIS_DELTA, max=1024)
+RIGHT_RANGE = DOWN_RANGE = dict(min=0, max=ppap.AXIS_MIDPOINT - ppap.AXIS_DELTA)
 
 X_AXIS_NAME = 'x_axis'
 X_AXIS_LEFT = -1

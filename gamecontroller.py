@@ -1,6 +1,5 @@
 import multiprocessing
-from multiprocessing import Process, Queue
-import gamecontrollerresponse
+from multiprocessing import Queue
 import gamecontrollerpoller
 import ppap
 from gamecontrollerdata import GameControllerData
@@ -22,19 +21,24 @@ class GameController:
         self.pb2: int = ppap.PUSH_BUTTON_NOT_PRESSED
         self.pb3: int = ppap.PUSH_BUTTON_NOT_PRESSED
         self.pb4: int = ppap.PUSH_BUTTON_NOT_PRESSED
+        self.joystick: int = ppap.PUSH_BUTTON_NOT_PRESSED
 
     def has_serial_port(self) -> bool:
         return self.serial_port_name is not None
 
     def get_push_button(self, button_index: int) -> int:
-        if button_index == ppap.PB1_INDEX:
-            return self.pb1
+        pressed: int = ppap.PUSH_BUTTON_NOT_PRESSED
+        if self.joystick == ppap.PUSH_BUTTON_PRESSED:
+            pressed = ppap.PUSH_BUTTON_PRESSED
+        elif button_index == ppap.PB1_INDEX:
+            pressed = self.pb1
         elif button_index == ppap.PB2_INDEX:
-            return self.pb2
+            pressed = self.pb2
         elif button_index == ppap.PB3_INDEX:
-            return self.pb3
+            pressed = self.pb3
         else: #  button_index == ppap.PB4_INDEX
-            return self.pb4
+            pressed = self.pb4
+        return pressed
 
     def read_controller(self) -> bool:
         if (self.has_serial_port() and not self.queue.empty()):
@@ -46,6 +50,6 @@ class GameController:
                 self.pb2 = item.pb2
                 self.pb3 = item.pb3
                 self.pb4 = item.pb4
-
+                self.joystick = item.joystick
             except:
                 print("queue is empty")
