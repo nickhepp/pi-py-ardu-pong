@@ -22,7 +22,7 @@ class PongPaddle(Widget):
     HORIZONTAL_ORIENTATION = 0
     VERTICAL_ORIENTATION = 1
 
-    LOCATION_UPDATE_AMOUNT = 5
+    LOCATION_UPDATE_AMOUNT = (5 * 60) / ppap.UPDATES_PER_SECOND
 
     _orientation = VERTICAL_ORIENTATION
     _game_controller = None
