@@ -8,9 +8,7 @@
   <i>Pi-Pi-Ardu-Pong Project shown at the Raspberry Pi Jam<br/>(Danforth Plant Science Center, October 2022)</i><br/>
   </div>
 
-<br/>
 [![Pi-Py-Ardu-Pong live demo TEXT](http://img.youtube.com/vi/xUGX6E_JspM/0.jpg)](http://www.youtube.com/watch?v=xUGX6E_JspM "Pi-Py-Ardu-Pong live demo")
-<br/>
 
 Pi-Py-Ardu-Pong is a video game project that combines many technologies of the electronic maker-space community.  It is a 4 player pong like game, that in addition to having more players than the traditional pong, has more bouncing balls and therefore more action.  Players also get to launch the balls, so there is more of an offensive element with this game compared to the traditional Pong.
 
