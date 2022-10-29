@@ -4,9 +4,13 @@
 <img src="graphics/pi-py-ardu-pong_system.jpg" width="800" style='display: block;
   margin-left: auto;
   margin-right: auto;
-  width: 70%;'/>
-  <i>Pi-Pi-Ardu-Pong Project shown at the Raspberry Pi Jam<br/>(Danforth Plant Science Center, October 2022)</i>
+  width: 70%;'/><br/>
+  <i>Pi-Pi-Ardu-Pong Project shown at the Raspberry Pi Jam<br/>(Danforth Plant Science Center, October 2022)</i><br/>
   </div>
+
+<br/>
+[![Pi-Py-Ardu-Pong live demo TEXT](http://img.youtube.com/vi/xUGX6E_JspM/0.jpg)](http://www.youtube.com/watch?v=xUGX6E_JspM "Pi-Py-Ardu-Pong live demo")
+<br/>
 
 Pi-Py-Ardu-Pong is a video game project that combines many technologies of the electronic maker-space community.  It is a 4 player pong like game, that in addition to having more players than the traditional pong, has more bouncing balls and therefore more action.  Players also get to launch the balls, so there is more of an offensive element with this game compared to the traditional Pong.
 
@@ -28,8 +32,8 @@ The game controllers which are comprised of the [EDPF Demo Kit](https://electron
 <img src="graphics/embedded_device_prototyping_framework_kit_controller.jpg" width="800" style='display: block;
   margin-left: auto;
   margin-right: auto;
-  width: 70%;' alt='EDPF Kit minus the Ardunio and USB cable'/>
-  <i>EDPF Kit minus the Arduino and USB cable</i>
+  width: 70%;' alt='EDPF Kit minus the Ardunio and USB cable'/><br/>
+  <i>EDPF Kit minus the Arduino and USB cable</i><br/>
 </div>
 
 ### Pong
@@ -80,5 +84,4 @@ Overall the game had a great response from those that played it.  Kids were comi
 * Make the window have a square aspect ratio - Currently the window size can be any size within the screen, and this means players on the longer dimensions are at a disadvantage with having to protect a larger area.  It would probably be best if the screen itself were a square b/c you could see Linux background beyond the window.
 
 ## TODOs
-* Insert video link at top of README
 * Backup the disk image (https://www.tomshardware.com/how-to/back-up-raspberry-pi-as-disk-image)
