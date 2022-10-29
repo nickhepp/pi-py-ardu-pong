@@ -8,6 +8,8 @@
   <i>Pi-Pi-Ardu-Pong Project shown at the Raspberry Pi Jam<br/>(Danforth Plant Science Center, October 2022)</i>
   </div>
 
+[![Pi-Py-Ardu-Pong live demo TEXT](http://img.youtube.com/vi/xUGX6E_JspM/0.jpg)](http://www.youtube.com/watch?v=xUGX6E_JspM "Pi-Py-Ardu-Pong live demo")
+
 Pi-Py-Ardu-Pong is a video game project that combines many technologies of the electronic maker-space community.  It is a 4 player pong like game, that in addition to having more players than the traditional pong, has more bouncing balls and therefore more action.  Players also get to launch the balls, so there is more of an offensive element with this game compared to the traditional Pong.
 
 While the Pi-Py-Ardu-Pong is essentially a game and some would even call it fun, its purpose is to show off the [Embedded Device Prototyping Framework (EDPF) Demo Kit](https://electroniccomputing.com/go-go-edpf-kit/) and the [EDPF firmware](https://github.com/nickhepp/embedded-device-prototyping-framework) which can be used by professionals and hobbyists alike to complete their electronic projects more rapidly than before. 
